@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Innovation Challenge</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --blue:#1a56db;--blue-dark:#1347b8;--gold:#d97706;--gold-light:#fef3c7;
+    --text:#111827;--muted:#6b7280;--border:#e5e7eb;--bg:#f9fafb;--white:#fff;
+    --radius:10px;--radius-lg:16px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);background:#fff;line-height:1.6}
+
+  .hero{position:relative;min-height:92vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#07080f}
+  .hero-canvas{position:absolute;inset:0;width:100%;height:100%}
+  .hero-overlay{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,transparent 20%,rgba(7,8,15,.55) 70%,rgba(7,8,15,.92) 100%)}
+  .hero-content{position:relative;z-index:2;text-align:center;padding:2rem 1.5rem;max-width:720px;margin:0 auto}
+  .badge-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.85);font-size:13px;padding:5px 16px;border-radius:20px;margin-bottom:1.5rem;letter-spacing:.02em}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#34d399;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.8)}}
+  .hero h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:700;color:#fff;line-height:1.16;margin-bottom:1.25rem;letter-spacing:-.025em;text-shadow:0 0 60px rgba(99,179,237,.18)}
+  .hero h1 em{font-style:normal;background:linear-gradient(90deg,#63b3ed,#b794f4,#76e4f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{font-size:17px;color:rgba(255,255,255,.6);max-width:520px;margin:0 auto 2.25rem;line-height:1.75}
+  .hero-cta{display:inline-block;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;padding:13px 34px;border-radius:8px;font-size:15px;font-weight:600;text-decoration:none;transition:opacity .15s,transform .1s;box-shadow:0 0 32px rgba(124,58,237,.35)}
+  .hero-cta:hover{opacity:.88;transform:translateY(-2px)}
+  .hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:3.5rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,.08)}
+  .hstat{text-align:center}
+  .hstat-n{font-size:26px;font-weight:700;color:#fff;letter-spacing:-.02em}
+  .hstat-l{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+
+  .countdown-wrap{background:var(--blue);padding:1.25rem 1rem;text-align:center}
+  .countdown-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+  .cd-label-pre{color:rgba(255,255,255,.75);font-size:14px;margin-right:8px}
+  .cd-unit{background:rgba(0,0,0,.25);border-radius:6px;padding:6px 14px;text-align:center;min-width:56px}
+  .cd-n{font-size:20px;font-weight:700;color:#fff;line-height:1}
+  .cd-l{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .cd-sep{color:rgba(255,255,255,.5);font-size:18px;font-weight:300;margin:0 2px}
+
+  .container{max-width:760px;margin:0 auto;padding:0 1.25rem}
+  section{padding:3rem 0}
+  .sec-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:.75rem}
+  h2{font-size:1.6rem;font-weight:700;margin-bottom:.6rem;line-height:1.3}
+  .sec-body{color:var(--muted);font-size:15px;line-height:1.75;max-width:600px}
+  .divider{border:none;border-top:1px solid var(--border);margin:0}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
+  .step{padding:1.25rem;background:var(--bg);border-radius:var(--radius-lg)}
+  .step-num{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem}
+  .step h3{font-size:14px;font-weight:600;margin-bottom:.4rem}
+  .step p{font-size:13px;color:var(--muted);line-height:1.55}
+
+  .prizes{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:12px;margin-top:2rem;align-items:end}
+  .prize-card{border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem 1rem;text-align:center;background:#fff}
+  .prize-card.first{background:#fffbeb;border-color:#fcd34d;transform:translateY(-8px)}
+  .prize-rank{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.5rem}
+  .prize-trophy{font-size:28px;margin-bottom:.5rem}
+  .prize-amt{font-size:1.75rem;font-weight:700;color:var(--text);line-height:1}
+  .prize-card.first .prize-amt{color:var(--gold)}
+  .prize-note{font-size:12px;color:var(--muted);margin-top:.4rem}
+
+  .dash{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-top:2rem}
+  .dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+  .dash-title{font-size:14px;font-weight:600}
+  .live-badge{display:flex;align-items:center;gap:5px;font-size:12px;color:#059669;background:#ecfdf5;border:1px solid #d1fae5;padding:3px 10px;border-radius:20px}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+  .stat-box{background:var(--bg);border-radius:var(--radius);padding:.75rem;text-align:center}
+  .stat-n{font-size:22px;font-weight:700}
+  .stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+  .fomo-bar{margin-top:1rem;background:var(--gold-light);border-left:3px solid var(--gold);padding:.7rem 1rem;border-radius:0 8px 8px 0;font-size:13px;color:#92400e;transition:opacity .3s}
+
+  .judges-section{padding:3rem 0}
+  .jury-tabs{display:flex;gap:0;margin-top:2rem;margin-bottom:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;width:fit-content}
+  .jury-tab{padding:8px 22px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:var(--bg);color:var(--muted);transition:background .15s,color .15s;font-family:inherit}
+  .jury-tab.active-j{background:#1a56db;color:#fff}
+  .jury-tab.active-p{background:#7c3aed;color:#fff}
+  .jury-panel{display:none;margin-top:1.75rem}
+  .jury-panel.visible{display:block}
+  .people-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+  .person-card{position:relative;background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;transition:transform .18s,box-shadow .18s}
+  .person-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .card-stripe{height:4px;width:100%}
+  .judge-card .card-stripe{background:linear-gradient(90deg,#1a56db,#60a5fa)}
+  .panel-card .card-stripe{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+  .card-body{padding:1.25rem 1rem 1rem;text-align:center}
+  .person-photo{width:68px;height:68px;border-radius:50%;margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;letter-spacing:.5px;overflow:hidden}
+  .person-photo img{width:100%;height:100%;object-fit:cover}
+  .judge-card .person-photo{background:linear-gradient(135deg,#1a56db,#60a5fa)}
+  .panel-card .person-photo{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+  .person-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.3}
+  .person-role{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .role-badge{display:inline-block;margin-top:.6rem;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:20px}
+  .judge-card .role-badge{background:#eff6ff;color:#1a56db}
+  .panel-card .role-badge{background:#f5f3ff;color:#7c3aed}
+
+  .form-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;margin-top:2rem}
+  .field{margin-bottom:1.25rem}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
+  label span{font-weight:400;color:var(--muted)}
+  .req{color:#dc2626;font-weight:400}
+  input[type=text],input[type=url],input[type=email],select,textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border .15s}
+  input[type=text]:focus,input[type=url]:focus,input[type=email]:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+  textarea{min-height:100px;resize:vertical;line-height:1.6}
+  .char-row{text-align:right;font-size:11px;color:#9ca3af;margin-top:3px}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 10px center;background-repeat:no-repeat;background-size:16px;padding-right:36px}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;margin-top:.25rem}
+  .submit-btn:hover{background:var(--blue-dark)}
+  .submit-btn:active{transform:scale(.99)}
+  .submit-btn:disabled{opacity:.6;cursor:not-allowed}
+  .submit-btn.err{background:#dc2626}
+  .success-box{display:none;text-align:center;padding:2.5rem 1rem}
+  .success-box .icon{font-size:48px;margin-bottom:1rem}
+  .success-box h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}
+  .success-box p{color:var(--muted);font-size:14px}
+
+  .rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.5rem}
+  .rule-item{display:flex;gap:10px;align-items:flex-start;background:var(--bg);padding:.75rem 1rem;border-radius:8px;font-size:13px;color:var(--muted)}
+  .rule-item strong{display:block;color:var(--text);font-size:13px;margin-bottom:2px}
+  .rule-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:5px}
+
+  .faq{margin-top:1.5rem;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .faq-item{border-bottom:1px solid var(--border)}
+  .faq-item:last-child{border-bottom:none}
+  .faq-q{width:100%;text-align:left;background:none;border:none;padding:1rem 1.25rem;font-size:14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--text);font-family:inherit}
+  .faq-q:hover{background:var(--bg)}
+  .faq-a{display:none;padding:.1rem 1.25rem 1rem;font-size:13px;color:var(--muted);line-height:1.7}
+  .faq-a.open{display:block}
+  .faq-icon{font-size:18px;color:var(--muted);transition:transform .2s;font-weight:300}
+  .faq-icon.open{transform:rotate(45deg)}
+
+  footer{background:var(--bg);border-top:1px solid var(--border);padding:1.5rem;text-align:center;font-size:13px;color:var(--muted)}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  /* ADMIN PANEL */
+  .admin-toggle{position:fixed;bottom:20px;right:20px;z-index:999;background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(26,86,219,.4);transition:transform .15s}
+  .admin-toggle:hover{transform:scale(1.1)}
+  .admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;backdrop-filter:blur(4px)}
+  .admin-overlay.visible{display:flex;align-items:center;justify-content:center}
+  .admin-modal{background:#fff;border-radius:16px;width:90%;max-width:920px;max-height:85vh;overflow:auto;padding:2rem;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+  .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+  .admin-header h2{margin-bottom:0}
+  .admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .admin-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);transition:all .15s;font-family:inherit}
+  .admin-btn:hover{background:var(--bg)}
+  .admin-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .admin-btn.primary:hover{background:var(--blue-dark)}
+  .admin-btn.danger{background:#dc2626;color:#fff;border-color:#dc2626}
+  .admin-btn.danger:hover{background:#b91c1c}
+  .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);padding:4px}
+  .close-btn:hover{color:var(--text)}
+  .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+  .admin-stat{background:var(--bg);border-radius:12px;padding:1rem;text-align:center}
+  .admin-stat .num{font-size:28px;font-weight:700;color:var(--blue)}
+  .admin-stat .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .submissions-table{width:100%;border-collapse:collapse;font-size:13px}
+  .submissions-table th{background:var(--bg);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);position:sticky;top:0}
+  .submissions-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;max-width:200px;word-wrap:break-word}
+  .submissions-table tr:hover td{background:#f0f7ff}
+  .table-wrap{max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+  .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
+  .empty-state .icon{font-size:40px;margin-bottom:.75rem}
+
+  .toast{position:fixed;bottom:80px;right:20px;z-index:1001;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.success{background:#059669}
+  .toast.error{background:#dc2626}
+  .toast.info{background:#2563eb}
+
+  @media(max-width:600px){
+    .steps,.prizes,.stats-grid,.rules-grid{grid-template-columns:1fr}
+    .prizes .prize-card.first{transform:none}
+    .hero-stats{gap:1.5rem}
+    .people-grid{grid-template-columns:repeat(2,1fr)}
+    .admin-stats{grid-template-columns:1fr}
+    .admin-modal{padding:1.25rem;width:95%}
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="badge-pill"><div class="live-dot"></div> Applications open now</div>
+    <h1>Your idea could be the one that <em>changes everything</em></h1>
+    <p class="hero-sub">We're searching for the builders hiding inside this company. Spot a problem. Build an AI fix. Win big — and reshape how we work, forever.</p>
+    <a href="#submit" class="hero-cta">Submit your idea →</a>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" id="hs-ideas">47</div><div class="hstat-l">ideas submitted</div></div>
+      <div class="hstat"><div class="hstat-n">₹1.9L</div><div class="hstat-l">in prizes</div></div>
+      <div class="hstat"><div class="hstat-n" id="hs-days">18</div><div class="hstat-l">days left</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="countdown-wrap">
+  <div class="countdown-inner">
+    <span class="cd-label-pre">Submissions close in</span>
+    <div class="cd-unit"><div class="cd-n" id="cd">18</div><div class="cd-l">days</div></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><div class="cd-n" id="ch">07</div><div class="cd-l">hrs</div></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><div class="cd-n" id="cm">42</div><div class="cd-l">min</div></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><div class="cd-n" id="cs">09</div><div class="cd-l">sec</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <section>
+    <div class="sec-label">how it works</div>
+    <h2>Three steps to make your mark</h2>
+    <p class="sec-body">No bureaucracy. No gatekeepers. Just bring a real problem, a working prototype, and the courage to put your name on it.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h3>Find the problem</h3><p>Look for repetitive work, broken handoffs, or anything that eats time. If it frustrates you, it's probably worth automating.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Build a prototype</h3><p>Use any AI tool — Claude, GPT, open-source, or your own stack. It doesn't need to be perfect. It needs to prove the idea works.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Submit & get judged</h3><p>Fill the form below. A cross-functional panel reviews every entry. Winners are announced at an exclusive award ceremony.</p></div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <section>
+    <div class="sec-label">prizes</div>
+    <h2>Real money for real impact</h2>
+    <p class="sec-body">The best ideas don't just win recognition — they get funded, built, and shipped across the company.</p>
+    <div class="prizes">
+      <div class="prize-card"><div class="prize-rank">Runner-up</div><div class="prize-trophy">🥈</div><div class="prize-amt">₹60,000</div><div class="prize-note">+ Digital certificate</div></div>
+      <div class="prize-card first"><div class="prize-rank">Grand prize</div><div class="prize-trophy">🏆</div><div class="prize-amt">₹1,00,000</div><div class="prize-note">+ Trophy + Feature spotlight in company newsletter</div></div>
+      <div class="prize-card"><div class="prize-rank">3rd place</div><div class="prize-trophy">🥉</div><div class="prize-amt">₹30,000</div><div class="prize-note">+ Digital certificate</div></div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <section>
+    <div class="sec-label">live activity</div>
+    <h2>The race is already on</h2>
+    <div class="dash">
+      <div class="dash-top">
+        <div class="dash-title">Contest dashboard</div>
+        <div class="live-badge"><div style="width:6px;height:6px;background:#059669;border-radius:50%;animation:pulse 1.4s infinite"></div>Live</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-n" id="cnt-i">47</div><div class="stat-l">Ideas in</div></div>
+        <div class="stat-box"><div class="stat-n">11</div><div class="stat-l">Departments</div></div>
+        <div class="stat-box"><div class="stat-n">312</div><div class="stat-l">Page views</div></div>
+        <div class="stat-box"><div class="stat-n" style="color:#dc2626" id="cnt-d">18d</div><div class="stat-l">Remaining</div></div>
+      </div>
+      <div class="fomo-bar" id="fomo">⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she's already entry #47.</div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <!-- JUDGES & PANEL -->
+  <section class="judges-section">
+    <div class="sec-label">jury</div>
+    <h2>Judges &amp; panel members</h2>
+    <p class="sec-body">Every submission is evaluated by a cross-functional jury. Judges score and rank all entries; panel members contribute domain expertise and advisory input.</p>
+
+    <div class="jury-tabs">
+      <button class="jury-tab active-j" onclick="switchTab(this,'judges')">Judges</button>
+      <button class="jury-tab" onclick="switchTab(this,'panel')">Panel members</button>
+    </div>
+
+    <div class="jury-panel visible" id="tab-judges">
+      <div class="people-grid">
+        <div class="person-card judge-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">NP</div>
+          <div class="person-name">Nitin Panwad</div>
+          <div class="person-role">CFO</div>
+          <div class="role-badge">Judge</div>
+        </div></div>
+        <div class="person-card judge-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">AA</div>
+          <div class="person-name">Aswini Agrawal</div>
+          <div class="person-role">Head of Supply Chain Management</div>
+          <div class="role-badge">Judge</div>
+        </div></div>
+        <div class="person-card judge-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">DS</div>
+          <div class="person-name">Deepak Sachdeva</div>
+          <div class="person-role">Application Development Delivery &amp; Management Head</div>
+          <div class="role-badge">Judge</div>
+        </div></div>
+        <div class="person-card judge-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">ST</div>
+          <div class="person-name">Sabaresh Thamatat</div>
+          <div class="person-role">CHRO</div>
+          <div class="role-badge">Judge</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="jury-panel" id="tab-panel">
+      <div class="people-grid">
+        <div class="person-card panel-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">RS</div>
+          <div class="person-name">Ravindra Singh</div>
+          <div class="person-role">General Manager</div>
+          <div class="role-badge">Panel</div>
+        </div></div>
+        <div class="person-card panel-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">RW</div>
+          <div class="person-name">Radheshyam Wagh</div>
+          <div class="person-role">Head of Operations</div>
+          <div class="role-badge">Panel</div>
+        </div></div>
+        <div class="person-card panel-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">KJ</div>
+          <div class="person-name">Kamlesh Jain</div>
+          <div class="person-role">Specialist — Diamond</div>
+          <div class="role-badge">Panel</div>
+        </div></div>
+        <div class="person-card panel-card"><div class="card-stripe"></div><div class="card-body">
+          <div class="person-photo">NK</div>
+          <div class="person-name">Nidhi Kumari</div>
+          <div class="person-role">Product Innovation Lead</div>
+          <div class="role-badge">Panel</div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <section>
+    <div class="sec-label">eligibility &amp; rules</div>
+    <h2>Simple rules, serious opportunity</h2>
+    <div class="rules-grid">
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>Who can enter</strong>All full-time and contract employees</div></div>
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>Team size</strong>Solo or teams up to 3 people</div></div>
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>Tool freedom</strong>Any AI framework or API is fair game</div></div>
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>What to submit</strong>Idea brief + working prototype link</div></div>
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>Judging criteria</strong>Impact, feasibility, creativity, demo clarity</div></div>
+      <div class="rule-item"><div class="rule-dot"></div><div><strong>Deadline</strong>When the timer hits zero — no exceptions</div></div>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I submit more than one idea? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Yes — you can submit up to two ideas, but each requires its own form submission with a separate working prototype.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Does my prototype need to be production-ready? <span class="faq-icon">+</span></button>
+        <div class="faq-a">No. Judges look for a working proof of concept that clearly demonstrates the idea. A polished demo video or interactive prototype is perfectly acceptable.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">When will the winners be announced? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Winners for each quarter will be announced at an exclusive award ceremony. All participants will be notified of the date and venue in advance.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <!-- SUBMISSION FORM -->
+  <section id="submit">
+    <div class="sec-label">submit your idea</div>
+    <h2>Your moment starts here</h2>
+    <p class="sec-body">Fill this in. It takes less than three minutes. The hardest part was having the idea — you already did that.</p>
+    <div class="form-wrap" id="form-wrap">
+      <div class="field">
+        <label>Your full name <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="e.g. Rahul Mehta"/>
+      </div>
+      <div class="field">
+        <label>Your email address <span class="req">*</span></label>
+        <input type="email" id="f-email" placeholder="e.g. rahul.mehta@vglgroup.com"/>
+      </div>
+      <div class="field">
+        <label>Department <span class="req">*</span></label>
+        <select id="f-dept">
+          <option value="">Select your department</option>
+          <option>Finance</option>
+          <option>Supply Chain</option>
+          <option>Human Resources</option>
+          <option>IT / Application Development</option>
+          <option>Operations</option>
+          <option>Sales &amp; Marketing</option>
+          <option>Product</option>
+          <option>Diamond / Manufacturing</option>
+          <option>Quality Assurance</option>
+          <option>Admin / Corporate</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Idea title <span class="req">*</span></label>
+        <input type="text" id="f-title" placeholder="e.g. AI-Powered Invoice Reconciliation Bot"/>
+      </div>
+      <div class="field">
+        <label>Your idea in brief <span>(what does it do, and what problem does it solve?)</span> <span class="req">*</span></label>
+        <textarea id="f-idea" maxlength="400" placeholder="Describe your AI automation in 2–4 sentences. Be specific about the problem and the solution..."></textarea>
+        <div class="char-row"><span id="cl">400</span> characters remaining</div>
+      </div>
+      <div class="field">
+        <label>AI tools / technologies used <span class="req">*</span></label>
+        <input type="text" id="f-tools" placeholder="e.g. Claude API, Python, GPT-4, LangChain"/>
+      </div>
+      <div class="field">
+        <label>Team members <span>(optional — leave blank if submitting solo)</span></label>
+        <input type="text" id="f-team" placeholder="e.g. Anjali Sharma, Karan Nair"/>
+      </div>
+      <div class="field">
+        <label>Link to your prototype or demo <span class="req">*</span></label>
+        <input type="url" id="f-link" placeholder="https://..."/>
+      </div>
+      <button class="submit-btn" id="sub-btn" onclick="handleSubmit()">Submit my idea →</button>
+    </div>
+    <div class="success-box" id="success-box">
+      <div class="icon">🎯</div>
+      <h3>You're in the running.</h3>
+      <p>Your idea has been received and an acknowledgement email has been sent to your inbox. The judging panel reviews all submissions after the deadline closes. Good luck!</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Questions or concerns? Write to <a href="mailto:Sabaresh@vglgroup.com">Sabaresh@vglgroup.com</a> · Prize amounts subject to applicable tax deductions
+</footer>
+
+<!-- Admin toggle -->
+<button class="admin-toggle" onclick="openAdmin()" title="Admin Panel">⚙</button>
+
+<!-- Admin Modal -->
+<div class="admin-overlay" id="admin-overlay" onclick="if(event.target===this)closeAdmin()">
+  <div class="admin-modal">
+    <div class="admin-header">
+      <div>
+        <h2 style="font-size:1.3rem">📊 Submissions Dashboard</h2>
+        <p style="font-size:12px;color:var(--muted);margin-top:4px">All idea submissions captured in the database</p>
+      </div>
+      <button class="close-btn" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-stats">
+      <div class="admin-stat"><div class="num" id="admin-total">0</div><div class="lbl">Total Submissions</div></div>
+      <div class="admin-stat"><div class="num" id="admin-depts">0</div><div class="lbl">Departments</div></div>
+      <div class="admin-stat"><div class="num" id="admin-latest">—</div><div class="lbl">Latest Submission</div></div>
+    </div>
+    <div class="admin-actions" style="margin-bottom:1rem">
+      <button class="admin-btn primary" onclick="downloadExcel()">📥 Download as Excel</button>
+      <button class="admin-btn" onclick="refreshAdmin()">🔄 Refresh</button>
+      <button class="admin-btn danger" onclick="clearAllData()">🗑 Clear All</button>
+    </div>
+    <div class="table-wrap" id="table-wrap">
+      <div class="empty-state" id="empty-state">
+        <div class="icon">📭</div>
+        <p>No submissions yet. Ideas submitted through the form will appear here.</p>
+      </div>
+      <table class="submissions-table" id="sub-table" style="display:none">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Email</th><th>Dept</th><th>Idea Title</th><th>Description</th><th>Tools</th><th>Team</th><th>Link</th><th>Submitted</th></tr>
+        </thead>
+        <tbody id="sub-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+// Deploy the Google Apps Script below and paste the web app URL here.
+// This enables: (a) email to judges, (b) acknowledgement to submitter,
+// (c) Google Sheets as a cloud database backup.
+const GOOGLE_SCRIPT_URL = '';
+// If you prefer EmailJS, fill these instead:
+const EMAILJS_PUBLIC_KEY = '';
+const EMAILJS_SERVICE_ID = '';
+const EMAILJS_TEMPLATE_JUDGES = '';
+const EMAILJS_TEMPLATE_ACK = '';
+
+const NOTIFICATION_RECIPIENTS = [
+  {name:'Nitin Panwad',    email:'nitin.panwad@vglgroup.com',    role:'CFO'},
+  {name:'Aswini Agrawal',  email:'aswini.agrawal@vglgroup.com',  role:'Head of Supply Chain Management'},
+  {name:'Deepak Sachdeva',  email:'deepak.sachdeva@vglgroup.com',  role:'Application Development Delivery & Management Head'},
+  {name:'Sabaresh Thamatat',email:'sabaresh@vglgroup.com',        role:'CHRO'}
+];
+
+// ============================================================
+// DATABASE (localStorage)
+// ============================================================
+const DB_KEY='ai_challenge_submissions';
+function getSubmissions(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[]}catch(e){return[]}}
+function saveSubmission(entry){const s=getSubmissions();entry.id=s.length+1;entry.timestamp=new Date().toISOString();entry.status='new';s.push(entry);localStorage.setItem(DB_KEY,JSON.stringify(s));return entry}
+function clearSubmissions(){localStorage.removeItem(DB_KEY)}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3500)}
+
+// ============================================================
+// EMAIL
+// ============================================================
+async function sendNotificationEmails(sub){
+  if(GOOGLE_SCRIPT_URL){
+    try{
+      await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({action:'newSubmission',submission:sub,recipients:NOTIFICATION_RECIPIENTS})});
+      showToast('Notification emails sent to judges & submitter','success');
+      return true;
+    }catch(err){console.error('Email error:',err);showToast('Saved. Email delivery pending.','info');return false}
+  }
+  if(EMAILJS_PUBLIC_KEY&&EMAILJS_SERVICE_ID){
+    try{
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      for(const r of NOTIFICATION_RECIPIENTS){
+        await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_JUDGES,{
+          to_name:r.name,to_email:r.email,from_name:sub.name,from_email:sub.email,
+          department:sub.department,idea_title:sub.ideaTitle,idea_description:sub.idea,
+          tools_used:sub.tools,team_members:sub.team||'Solo',prototype_link:sub.link,
+          submission_date:new Date(sub.timestamp).toLocaleString('en-IN')
+        });
+      }
+      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ACK,{
+        to_name:sub.name,to_email:sub.email,idea_title:sub.ideaTitle,
+        submission_date:new Date(sub.timestamp).toLocaleString('en-IN')
+      });
+      showToast('Emails sent!','success');return true;
+    }catch(err){console.error('EmailJS error:',err);showToast('Saved. Email issue.','error');return false}
+  }
+  showToast('Idea saved! Configure email for notifications.','info');return false;
+}
+
+// ============================================================
+// FORM SUBMISSION
+// ============================================================
+function handleSubmit(){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const dept=document.getElementById('f-dept').value;
+  const ideaTitle=document.getElementById('f-title').value.trim();
+  const idea=document.getElementById('f-idea').value.trim();
+  const tools=document.getElementById('f-tools').value.trim();
+  const team=document.getElementById('f-team').value.trim();
+  const link=document.getElementById('f-link').value.trim();
+  const btn=document.getElementById('sub-btn');
+
+  if(!name||!email||!dept||!ideaTitle||!idea||!tools||!link){
+    btn.classList.add('err');btn.textContent='Please fill in all required fields';
+    setTimeout(()=>{btn.classList.remove('err');btn.textContent='Submit my idea →'},2200);return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    btn.classList.add('err');btn.textContent='Please enter a valid email';
+    setTimeout(()=>{btn.classList.remove('err');btn.textContent='Submit my idea →'},2200);return;
+  }
+
+  btn.disabled=true;btn.textContent='Submitting...';
+  const sub={name,email,department:dept,ideaTitle,idea,tools,team,link};
+  const saved=saveSubmission(sub);
+  sendNotificationEmails(saved);
+  document.getElementById('form-wrap').style.display='none';
+  document.getElementById('success-box').style.display='block';
+  const c=document.getElementById('cnt-i');c.textContent=parseInt(c.textContent)+1;
+  document.getElementById('hs-ideas').textContent=parseInt(document.getElementById('hs-ideas').textContent)+1;
+}
+
+// ============================================================
+// ADMIN PANEL
+// ============================================================
+function openAdmin(){document.getElementById('admin-overlay').classList.add('visible');refreshAdmin()}
+function closeAdmin(){document.getElementById('admin-overlay').classList.remove('visible')}
+
+function refreshAdmin(){
+  const s=getSubmissions(),total=s.length;
+  const depts=new Set(s.map(x=>x.department)).size;
+  const latest=total>0?new Date(s[total-1].timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+  document.getElementById('admin-total').textContent=total;
+  document.getElementById('admin-depts').textContent=depts;
+  document.getElementById('admin-latest').textContent=latest;
+  const tbody=document.getElementById('sub-tbody'),table=document.getElementById('sub-table'),empty=document.getElementById('empty-state');
+  if(total===0){table.style.display='none';empty.style.display='block';return}
+  table.style.display='table';empty.style.display='none';tbody.innerHTML='';
+  s.forEach((x,i)=>{
+    const date=new Date(x.timestamp).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(x.email)}</td><td>${esc(x.department)}</td><td>${esc(x.ideaTitle||'')}</td><td title="${esc(x.idea)}">${esc(x.idea).substring(0,80)}${x.idea.length>80?'...':''}</td><td>${esc(x.tools||'')}</td><td>${esc(x.team||'—')}</td><td><a href="${esc(x.link)}" target="_blank" style="color:var(--blue);font-size:12px">Open ↗</a></td><td style="font-size:11px;white-space:nowrap">${date}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function clearAllData(){if(confirm('Delete all submissions? This cannot be undone.')){clearSubmissions();refreshAdmin();showToast('All submissions cleared','info')}}
+
+// ============================================================
+// EXCEL DOWNLOAD
+// ============================================================
+function downloadExcel(){
+  const s=getSubmissions();
+  if(!s.length){showToast('No submissions to download','error');return}
+  const data=s.map((x,i)=>({'#':i+1,'Full Name':x.name,'Email':x.email,'Department':x.department,'Idea Title':x.ideaTitle||'','Description':x.idea,'AI Tools':x.tools||'','Team Members':x.team||'Solo','Prototype Link':x.link,'Submitted On':new Date(x.timestamp).toLocaleString('en-IN'),'Status':x.status||'new'}));
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:22},{wch:30},{wch:18},{wch:30},{wch:50},{wch:25},{wch:25},{wch:35},{wch:22},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Submissions');
+  // Summary
+  const dc={};s.forEach(x=>{dc[x.department]=(dc[x.department]||0)+1});
+  const sum=Object.entries(dc).map(([d,c])=>({Department:d,Submissions:c}));
+  sum.push({Department:'TOTAL',Submissions:s.length});
+  const ws2=XLSX.utils.json_to_sheet(sum);ws2['!cols']=[{wch:30},{wch:15}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+  XLSX.writeFile(wb,'AI_Challenge_Submissions_'+new Date().toISOString().split('T')[0]+'.xlsx');
+  showToast('Excel downloaded!','success');
+}
+
+// ============================================================
+// HERO CANVAS
+// ============================================================
+const canvas=document.getElementById('heroCanvas'),ctx=canvas.getContext('2d');
+let W,H,nodes=[];let mouseX=0,mouseY=0,targetRotX=0,targetRotY=0,rotX=0,rotY=0;
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;buildNodes()}
+document.addEventListener('mousemove',e=>{mouseX=(e.clientX/window.innerWidth-.5)*2;mouseY=(e.clientY/window.innerHeight-.5)*2});
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouseX=((e.clientX-r.left)/W-.5)*2;mouseY=((e.clientY-r.top)/H-.5)*2});
+const PALETTE=['#63b3ed','#b794f4','#76e4f7','#f687b3','#90cdf4','#d6bcfa'];
+class Node{constructor(){this.x=(Math.random()-.5)*2.2;this.y=(Math.random()-.5)*2.2;this.z=(Math.random()-.5)*2.2;this.vx=(Math.random()-.5)*.003;this.vy=(Math.random()-.5)*.003;this.vz=(Math.random()-.5)*.003;this.color=PALETTE[Math.floor(Math.random()*PALETTE.length)];this.baseR=Math.random()*1.8+.8;this.isHub=Math.random()<.1;if(this.isHub)this.baseR=Math.random()*2.5+3;this.pulseOff=Math.random()*Math.PI*2}update(){this.x+=this.vx;this.y+=this.vy;this.z+=this.vz;if(Math.abs(this.x)>1.2)this.vx*=-1;if(Math.abs(this.y)>1.2)this.vy*=-1;if(Math.abs(this.z)>1.2)this.vz*=-1}project(t){const cosX=Math.cos(rotX),sinX=Math.sin(rotX),cosY=Math.cos(rotY),sinY=Math.sin(rotY);let x=this.x,y=this.y,z=this.z;let y2=y*cosX-z*sinX,z2=y*sinX+z*cosX;let x3=x*cosY+z2*sinY,z3=-x*sinY+z2*cosY;const fov=2.2,scale=fov/(fov+z3),pulse=Math.sin(t*.002+this.pulseOff);return{sx:x3*scale*(W*.38)+W/2,sy:y2*scale*(H*.38)+H/2,z:z3,scale,r:(this.baseR+(this.isHub?pulse*.9:pulse*.25))*scale,alpha:this.isHub?.92:Math.min(.85,(.42+pulse*.15)*scale)}}}
+function hexAlpha(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`}
+function buildNodes(){nodes=[];const count=Math.min(Math.floor(W*H/4200),180);for(let i=0;i<count;i++)nodes.push(new Node())}
+const MAX_DIST=0.72;let t=0;
+function animate(){ctx.clearRect(0,0,W,H);t++;targetRotY=mouseX*.55;targetRotX=-mouseY*.38;rotY+=(targetRotY-rotY)*.04;rotX+=(targetRotX-rotX)*.04;nodes.forEach(n=>n.update());const proj=nodes.map((n,i)=>({...n.project(t),node:n,i}));proj.sort((a,b)=>a.z-b.z);for(let i=0;i<proj.length;i++){for(let j=i+1;j<proj.length;j++){const a=proj[i].node,b=proj[j].node;const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z;const d=Math.sqrt(dx*dx+dy*dy+dz*dz);if(d<MAX_DIST){const str=1-d/MAX_DIST;const avgZ=(proj[i].z+proj[j].z)/2;const depthAlpha=Math.max(0,(avgZ+1.2)/2.4);const alpha=(a.isHub||b.isHub?str*.5:str*.15)*depthAlpha;const g=ctx.createLinearGradient(proj[i].sx,proj[i].sy,proj[j].sx,proj[j].sy);g.addColorStop(0,hexAlpha(a.color,alpha));g.addColorStop(1,hexAlpha(b.color,alpha));ctx.beginPath();ctx.moveTo(proj[i].sx,proj[i].sy);ctx.lineTo(proj[j].sx,proj[j].sy);ctx.strokeStyle=g;ctx.lineWidth=(a.isHub||b.isHub?str*1.6:str*.7)*proj[i].scale;ctx.stroke()}}}proj.forEach(p=>{if(p.isHub){const g=ctx.createRadialGradient(p.sx,p.sy,0,p.sx,p.sy,p.r*5);g.addColorStop(0,hexAlpha(p.node.color,.22));g.addColorStop(1,hexAlpha(p.node.color,0));ctx.beginPath();ctx.arc(p.sx,p.sy,p.r*5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}ctx.beginPath();ctx.arc(p.sx,p.sy,Math.max(.5,p.r),0,Math.PI*2);ctx.fillStyle=hexAlpha(p.node.color,p.alpha);ctx.fill()});requestAnimationFrame(animate)}
+resize();window.addEventListener('resize',resize);animate();
+
+// Countdown
+let secs=18*86400+7*3600+42*60+9;
+setInterval(()=>{if(secs<=0)return;secs--;const d=Math.floor(secs/86400),h=Math.floor((secs%86400)/3600),m=Math.floor((secs%3600)/60),s=secs%60;document.getElementById('cd').textContent=String(d).padStart(2,'0');document.getElementById('ch').textContent=String(h).padStart(2,'0');document.getElementById('cm').textContent=String(m).padStart(2,'0');document.getElementById('cs').textContent=String(s).padStart(2,'0');document.getElementById('hs-days').textContent=d;document.getElementById('cnt-d').textContent=d+'d'},1000);
+
+// FOMO
+const fomoLines=['⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she\'s already entry #47.','🔥 <strong>11 departments</strong> have entered. Is yours on the board yet?','👀 <strong>The top prize is unclaimed.</strong> Your idea might be the one to take it.','⏳ <strong>Early entries</strong> get more review time from judges. Don\'t wait.','🚀 <strong>47 ideas in</strong> and counting. The window is closing fast.'];
+let fi=0;const fomoEl=document.getElementById('fomo');fomoEl.style.transition='opacity .3s';
+setInterval(()=>{fi=(fi+1)%fomoLines.length;fomoEl.style.opacity='0';setTimeout(()=>{fomoEl.innerHTML=fomoLines[fi];fomoEl.style.opacity='1'},300)},4500);
+
+document.getElementById('f-idea').addEventListener('input',function(){document.getElementById('cl').textContent=400-this.value.length});
+function toggleFaq(btn){const a=btn.nextElementSibling;const icon=btn.querySelector('.faq-icon');const open=a.classList.toggle('open');icon.classList.toggle('open',open)}
+function switchTab(btn,which){document.querySelectorAll('.jury-tab').forEach(t=>{t.classList.remove('active-j','active-p')});document.querySelectorAll('.jury-panel').forEach(p=>p.classList.remove('visible'));btn.classList.add(which==='judges'?'active-j':'active-p');document.getElementById('tab-'+which).classList.add('visible')}
+
+// Update count from DB on load
+(function(){const s=getSubmissions(),base=47,total=base+s.length;document.getElementById('cnt-i').textContent=total;document.getElementById('hs-ideas').textContent=total})();
+</script>
+</body>
+</html>
