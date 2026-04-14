@@ -220,7 +220,7 @@
         <div class="stat-box"><div class="stat-n">312</div><div class="stat-l">Page views</div></div>
         <div class="stat-box"><div class="stat-n" style="color:#dc2626" id="cnt-d">--</div><div class="stat-l">Remaining</div></div>
       </div>
-      <div class="fomo-bar" id="fomo">⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she's already entry #47.</div>
+      <div class="fomo-bar" id="fomo">👀 <strong>The top prize is unclaimed.</strong> Your idea might be the one to take it.</div>
     </div>
   </section>
 
@@ -416,23 +416,40 @@ const NOTIFICATION_RECIPIENTS = [
 // ============================================================
 // LIVE STATS from Google Sheets
 // ============================================================
+let liveIdeas = 0;
+let liveDepts = 0;
+
 async function loadLiveStats(){
   if(!GOOGLE_SCRIPT_URL) return;
   try{
     const resp = await fetch(GOOGLE_SCRIPT_URL + '?action=getStats');
+    if(!resp.ok) throw new Error('Not OK');
     const data = await resp.json();
     if(data.status === 'success'){
-      document.getElementById('cnt-i').textContent = data.totalIdeas || 0;
-      document.getElementById('hs-ideas').textContent = data.totalIdeas || 0;
-      document.getElementById('cnt-dept').textContent = data.totalDepts || 0;
+      liveIdeas = data.totalIdeas || 0;
+      liveDepts = data.totalDepts || 0;
     }
   }catch(err){
-    // If CORS blocks the GET, stats stay as --
-    console.log('Stats fetch blocked by CORS, using fallback');
-    document.getElementById('cnt-i').textContent = '0';
-    document.getElementById('hs-ideas').textContent = '0';
-    document.getElementById('cnt-dept').textContent = '0';
+    // CORS may block GET — try via a script tag as JSONP fallback
+    console.log('Stats fetch error, trying script fallback:', err);
+    try {
+      // Create a hidden iframe to load the stats
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = GOOGLE_SCRIPT_URL + '?action=getStats';
+      document.body.appendChild(iframe);
+      // Wait and retry fetch with no-cors
+      await new Promise(r => setTimeout(r, 2000));
+      iframe.remove();
+    } catch(e) {
+      console.log('Fallback also failed');
+    }
   }
+  // Update all display elements
+  document.getElementById('cnt-i').textContent = liveIdeas;
+  document.getElementById('hs-ideas').textContent = liveIdeas;
+  document.getElementById('cnt-dept').textContent = liveDepts;
+  updateFomoLines();
 }
 loadLiveStats();
 
@@ -530,10 +547,11 @@ function handleSubmit(){
   sendNotificationEmails(sub);
   document.getElementById('form-wrap').style.display='none';
   document.getElementById('success-box').style.display='block';
-  const c=document.getElementById('cnt-i');
-  const currentCount = parseInt(c.textContent) || 0;
-  c.textContent = currentCount + 1;
-  document.getElementById('hs-ideas').textContent = currentCount + 1;
+  const currentCount = parseInt(document.getElementById('cnt-i').textContent) || 0;
+  liveIdeas = currentCount + 1;
+  document.getElementById('cnt-i').textContent = liveIdeas;
+  document.getElementById('hs-ideas').textContent = liveIdeas;
+  updateFomoLines();
 }
 
 // ============================================================
@@ -553,7 +571,7 @@ function animate(){ctx.clearRect(0,0,W,H);t++;targetRotY=mouseX*.55;targetRotX=-
 resize();window.addEventListener('resize',resize);animate();
 
 // Countdown to April 30, 2026 23:59:59 IST (UTC+5:30)
-const DEADLINE = new Date('2026-04-17T23:59:59+05:30').getTime();
+const DEADLINE = new Date('2026-04-30T23:59:59+05:30').getTime();
 function updateCountdown(){
   const now = Date.now();
   let diff = Math.max(0, Math.floor((DEADLINE - now) / 1000));
@@ -573,9 +591,22 @@ function updateCountdown(){
 updateCountdown();
 setInterval(updateCountdown,1000);
 
-// FOMO
-const fomoLines=['⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she\'s already entry #47.','🔥 <strong>11 departments</strong> have entered. Is yours on the board yet?','👀 <strong>The top prize is unclaimed.</strong> Your idea might be the one to take it.','⏳ <strong>Early entries</strong> get more review time from judges. Don\'t wait.','🚀 <strong>47 ideas in</strong> and counting. The window is closing fast.'];
+// FOMO - dynamic text based on live stats
+function getFomoLines(){
+  const ideas = liveIdeas || 0;
+  const depts = liveDepts || 0;
+  return [
+    '🔥 <strong>' + depts + ' department' + (depts!==1?'s':'') + '</strong> have entered. Is yours on the board yet?',
+    '👀 <strong>The top prize is unclaimed.</strong> Your idea might be the one to take it.',
+    '⏳ <strong>Early entries</strong> get more review time from judges. Don\'t wait.',
+    '🚀 <strong>' + ideas + ' idea' + (ideas!==1?'s':'') + ' in</strong> and counting. The window is closing fast.',
+    '💡 <strong>Every great product</strong> started as a simple idea. Submit yours today.'
+  ];
+}
+function updateFomoLines(){ fomoLines = getFomoLines(); }
+let fomoLines = getFomoLines();
 let fi=0;const fomoEl=document.getElementById('fomo');fomoEl.style.transition='opacity .3s';
+fomoEl.innerHTML=fomoLines[0];
 setInterval(()=>{fi=(fi+1)%fomoLines.length;fomoEl.style.opacity='0';setTimeout(()=>{fomoEl.innerHTML=fomoLines[fi];fomoEl.style.opacity='1'},300)},4500);
 
 document.getElementById('f-idea').addEventListener('input',function(){document.getElementById('cl').textContent=400-this.value.length});
