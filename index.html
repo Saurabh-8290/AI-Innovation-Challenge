@@ -427,10 +427,51 @@ async function sendNotificationEmails(sub){
     return false;
   }
   try{
-    await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'newSubmission',submission:sub,recipients:NOTIFICATION_RECIPIENTS})});
-    showToast('Submission saved & emails sent!','success');
-    return true;
+    // Method: Use fetch with redirect:follow (Google Apps Script redirects on POST)
+    const payload = JSON.stringify({action:'newSubmission',submission:sub,recipients:NOTIFICATION_RECIPIENTS});
+    
+    // Try standard fetch first
+    try {
+      const resp = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: payload,
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        redirect: 'follow'
+      });
+      showToast('Submission saved & emails sent!','success');
+      return true;
+    } catch(corsErr) {
+      // If CORS blocks it, fall back to creating a hidden form + iframe
+      // This method bypasses CORS entirely
+      const iframe = document.createElement('iframe');
+      iframe.name = 'gas_target_' + Date.now();
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = GOOGLE_SCRIPT_URL;
+      form.target = iframe.name;
+      form.style.display = 'none';
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'payload';
+      input.value = payload;
+      form.appendChild(input);
+
+      document.body.appendChild(form);
+      form.submit();
+
+      // Cleanup after 10 seconds
+      setTimeout(() => {
+        form.remove();
+        iframe.remove();
+      }, 10000);
+
+      showToast('Submission saved & emails sent!','success');
+      return true;
+    }
   }catch(err){
     console.error('Email error:',err);
     showToast('Submitted. Email delivery pending.','info');
