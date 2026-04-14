@@ -4,8 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Innovation Challenge</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -135,36 +133,7 @@
   footer a{color:var(--blue);text-decoration:none}
   footer a:hover{text-decoration:underline}
 
-  /* ADMIN PANEL */
-  .admin-toggle{position:fixed;bottom:20px;right:20px;z-index:999;background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(26,86,219,.4);transition:transform .15s}
-  .admin-toggle:hover{transform:scale(1.1)}
-  .admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;backdrop-filter:blur(4px)}
-  .admin-overlay.visible{display:flex;align-items:center;justify-content:center}
-  .admin-modal{background:#fff;border-radius:16px;width:90%;max-width:920px;max-height:85vh;overflow:auto;padding:2rem;box-shadow:0 24px 64px rgba(0,0,0,.2)}
-  .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
-  .admin-header h2{margin-bottom:0}
-  .admin-actions{display:flex;gap:8px;flex-wrap:wrap}
-  .admin-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);transition:all .15s;font-family:inherit}
-  .admin-btn:hover{background:var(--bg)}
-  .admin-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
-  .admin-btn.primary:hover{background:var(--blue-dark)}
-  .admin-btn.danger{background:#dc2626;color:#fff;border-color:#dc2626}
-  .admin-btn.danger:hover{background:#b91c1c}
-  .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);padding:4px}
-  .close-btn:hover{color:var(--text)}
-  .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
-  .admin-stat{background:var(--bg);border-radius:12px;padding:1rem;text-align:center}
-  .admin-stat .num{font-size:28px;font-weight:700;color:var(--blue)}
-  .admin-stat .lbl{font-size:12px;color:var(--muted);margin-top:2px}
-  .submissions-table{width:100%;border-collapse:collapse;font-size:13px}
-  .submissions-table th{background:var(--bg);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);position:sticky;top:0}
-  .submissions-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;max-width:200px;word-wrap:break-word}
-  .submissions-table tr:hover td{background:#f0f7ff}
-  .table-wrap{max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:10px}
-  .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
-  .empty-state .icon{font-size:40px;margin-bottom:.75rem}
-
-  .toast{position:fixed;bottom:80px;right:20px;z-index:1001;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+  .toast{position:fixed;bottom:20px;right:20px;z-index:1001;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.success{background:#059669}
   .toast.error{background:#dc2626}
@@ -175,8 +144,6 @@
     .prizes .prize-card.first{transform:none}
     .hero-stats{gap:1.5rem}
     .people-grid{grid-template-columns:repeat(2,1fr)}
-    .admin-stats{grid-template-columns:1fr}
-    .admin-modal{padding:1.25rem;width:95%}
   }
 </style>
 </head>
@@ -427,61 +394,6 @@
   Questions or concerns? Write to <a href="mailto:Sabaresh@vglgroup.com">Sabaresh@vglgroup.com</a> · Prize amounts subject to applicable tax deductions
 </footer>
 
-<!-- Admin toggle (hidden by default — press Ctrl+Shift+A to reveal) -->
-<button class="admin-toggle" id="admin-toggle-btn" style="display:none" onclick="showLoginPrompt()" title="Admin Panel">⚙</button>
-
-<!-- Admin Login Modal -->
-<div class="admin-overlay" id="login-overlay" onclick="if(event.target===this)closeLogin()">
-  <div class="admin-modal" style="max-width:400px;text-align:center">
-    <button class="close-btn" onclick="closeLogin()" style="position:absolute;top:16px;right:20px">✕</button>
-    <div style="padding:1.5rem 1rem">
-      <div style="font-size:40px;margin-bottom:12px">🔐</div>
-      <h2 style="font-size:1.2rem;margin-bottom:4px">Admin Access</h2>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Enter the admin password to view submissions</p>
-      <div class="field" style="text-align:left">
-        <label>Password</label>
-        <input type="password" id="admin-pwd" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')verifyAdmin()"/>
-      </div>
-      <p id="pwd-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;display:none">Incorrect password. Please try again.</p>
-      <button class="submit-btn" onclick="verifyAdmin()" style="margin-top:0">Unlock Dashboard →</button>
-    </div>
-  </div>
-</div>
-
-<!-- Admin Modal -->
-<div class="admin-overlay" id="admin-overlay" onclick="if(event.target===this)closeAdmin()">
-  <div class="admin-modal">
-    <div class="admin-header">
-      <div>
-        <h2 style="font-size:1.3rem">📊 Submissions Dashboard</h2>
-        <p style="font-size:12px;color:var(--muted);margin-top:4px">All idea submissions captured in the database</p>
-      </div>
-      <button class="close-btn" onclick="closeAdmin()">✕</button>
-    </div>
-    <div class="admin-stats">
-      <div class="admin-stat"><div class="num" id="admin-total">0</div><div class="lbl">Total Submissions</div></div>
-      <div class="admin-stat"><div class="num" id="admin-depts">0</div><div class="lbl">Departments</div></div>
-      <div class="admin-stat"><div class="num" id="admin-latest">—</div><div class="lbl">Latest Submission</div></div>
-    </div>
-    <div class="admin-actions" style="margin-bottom:1rem">
-      <button class="admin-btn primary" onclick="downloadExcel()">📥 Download as Excel</button>
-      <button class="admin-btn" onclick="refreshAdmin()">🔄 Refresh</button>
-      <button class="admin-btn danger" onclick="clearAllData()">🗑 Clear All</button>
-    </div>
-    <div class="table-wrap" id="table-wrap">
-      <div class="empty-state" id="empty-state">
-        <div class="icon">📭</div>
-        <p>No submissions yet. Ideas submitted through the form will appear here.</p>
-      </div>
-      <table class="submissions-table" id="sub-table" style="display:none">
-        <thead>
-          <tr><th>#</th><th>Name</th><th>Email</th><th>Dept</th><th>Idea Title</th><th>Description</th><th>Tools</th><th>Team</th><th>Link</th><th>Submitted</th></tr>
-        </thead>
-        <tbody id="sub-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -489,15 +401,10 @@
 // ============================================================
 // CONFIGURATION
 // ============================================================
-// Deploy the Google Apps Script below and paste the web app URL here.
-// This enables: (a) email to judges, (b) acknowledgement to submitter,
-// (c) Google Sheets as a cloud database backup.
+// Deploy the Google Apps Script and paste the web app URL here.
+// This enables: (a) saving to Google Sheets, (b) email to judges,
+// (c) acknowledgement email to submitter.
 const GOOGLE_SCRIPT_URL = '';
-// If you prefer EmailJS, fill these instead:
-const EMAILJS_PUBLIC_KEY = '';
-const EMAILJS_SERVICE_ID = '';
-const EMAILJS_TEMPLATE_JUDGES = '';
-const EMAILJS_TEMPLATE_ACK = '';
 
 const NOTIFICATION_RECIPIENTS = [
   {name:'Nitin Panwad',    email:'nitin.panwad@vglgroup.com',    role:'CFO'},
@@ -507,49 +414,28 @@ const NOTIFICATION_RECIPIENTS = [
 ];
 
 // ============================================================
-// DATABASE (localStorage)
-// ============================================================
-const DB_KEY='ai_challenge_submissions';
-function getSubmissions(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[]}catch(e){return[]}}
-function saveSubmission(entry){const s=getSubmissions();entry.id=s.length+1;entry.timestamp=new Date().toISOString();entry.status='new';s.push(entry);localStorage.setItem(DB_KEY,JSON.stringify(s));return entry}
-function clearSubmissions(){localStorage.removeItem(DB_KEY)}
-
-// ============================================================
 // TOAST
 // ============================================================
 function showToast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3500)}
 
 // ============================================================
-// EMAIL
+// EMAIL & GOOGLE SHEETS (via Google Apps Script)
 // ============================================================
 async function sendNotificationEmails(sub){
-  if(GOOGLE_SCRIPT_URL){
-    try{
-      await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({action:'newSubmission',submission:sub,recipients:NOTIFICATION_RECIPIENTS})});
-      showToast('Notification emails sent to judges & submitter','success');
-      return true;
-    }catch(err){console.error('Email error:',err);showToast('Saved. Email delivery pending.','info');return false}
+  if(!GOOGLE_SCRIPT_URL){
+    showToast('Idea submitted! Configure Google Apps Script for emails.','info');
+    return false;
   }
-  if(EMAILJS_PUBLIC_KEY&&EMAILJS_SERVICE_ID){
-    try{
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-      for(const r of NOTIFICATION_RECIPIENTS){
-        await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_JUDGES,{
-          to_name:r.name,to_email:r.email,from_name:sub.name,from_email:sub.email,
-          department:sub.department,idea_title:sub.ideaTitle,idea_description:sub.idea,
-          tools_used:sub.tools,team_members:sub.team||'Solo',prototype_link:sub.link,
-          submission_date:new Date(sub.timestamp).toLocaleString('en-IN')
-        });
-      }
-      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ACK,{
-        to_name:sub.name,to_email:sub.email,idea_title:sub.ideaTitle,
-        submission_date:new Date(sub.timestamp).toLocaleString('en-IN')
-      });
-      showToast('Emails sent!','success');return true;
-    }catch(err){console.error('EmailJS error:',err);showToast('Saved. Email issue.','error');return false}
+  try{
+    await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'newSubmission',submission:sub,recipients:NOTIFICATION_RECIPIENTS})});
+    showToast('Submission saved & emails sent!','success');
+    return true;
+  }catch(err){
+    console.error('Email error:',err);
+    showToast('Submitted. Email delivery pending.','info');
+    return false;
   }
-  showToast('Idea saved! Configure email for notifications.','info');return false;
 }
 
 // ============================================================
@@ -576,103 +462,12 @@ function handleSubmit(){
   }
 
   btn.disabled=true;btn.textContent='Submitting...';
-  const sub={name,email,department:dept,ideaTitle,idea,tools,team,link};
-  const saved=saveSubmission(sub);
-  sendNotificationEmails(saved);
+  const sub={name,email,department:dept,ideaTitle,idea,tools,team,link,timestamp:new Date().toISOString(),status:'new'};
+  sendNotificationEmails(sub);
   document.getElementById('form-wrap').style.display='none';
   document.getElementById('success-box').style.display='block';
   const c=document.getElementById('cnt-i');c.textContent=parseInt(c.textContent)+1;
   document.getElementById('hs-ideas').textContent=parseInt(document.getElementById('hs-ideas').textContent)+1;
-}
-
-// ============================================================
-// ADMIN PANEL (Password Protected)
-// ============================================================
-// CHANGE THIS PASSWORD to whatever you want:
-const ADMIN_PASSWORD = 'vgl@2026';
-let adminAuthenticated = false;
-
-// Secret shortcut: Ctrl+Shift+A to show the admin button
-document.addEventListener('keydown', function(e) {
-  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-    e.preventDefault();
-    const btn = document.getElementById('admin-toggle-btn');
-    btn.style.display = btn.style.display === 'none' ? 'flex' : 'none';
-  }
-});
-
-function showLoginPrompt() {
-  if (adminAuthenticated) {
-    openAdmin();
-    return;
-  }
-  document.getElementById('login-overlay').classList.add('visible');
-  document.getElementById('admin-pwd').value = '';
-  document.getElementById('pwd-error').style.display = 'none';
-  setTimeout(() => document.getElementById('admin-pwd').focus(), 100);
-}
-
-function closeLogin() {
-  document.getElementById('login-overlay').classList.remove('visible');
-}
-
-function verifyAdmin() {
-  const pwd = document.getElementById('admin-pwd').value;
-  if (pwd === ADMIN_PASSWORD) {
-    adminAuthenticated = true;
-    closeLogin();
-    openAdmin();
-    showToast('Admin access granted', 'success');
-  } else {
-    document.getElementById('pwd-error').style.display = 'block';
-    document.getElementById('admin-pwd').value = '';
-    document.getElementById('admin-pwd').focus();
-  }
-}
-
-function openAdmin(){document.getElementById('admin-overlay').classList.add('visible');refreshAdmin()}
-function closeAdmin(){document.getElementById('admin-overlay').classList.remove('visible')}
-
-function refreshAdmin(){
-  const s=getSubmissions(),total=s.length;
-  const depts=new Set(s.map(x=>x.department)).size;
-  const latest=total>0?new Date(s[total-1].timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
-  document.getElementById('admin-total').textContent=total;
-  document.getElementById('admin-depts').textContent=depts;
-  document.getElementById('admin-latest').textContent=latest;
-  const tbody=document.getElementById('sub-tbody'),table=document.getElementById('sub-table'),empty=document.getElementById('empty-state');
-  if(total===0){table.style.display='none';empty.style.display='block';return}
-  table.style.display='table';empty.style.display='none';tbody.innerHTML='';
-  s.forEach((x,i)=>{
-    const date=new Date(x.timestamp).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(x.email)}</td><td>${esc(x.department)}</td><td>${esc(x.ideaTitle||'')}</td><td title="${esc(x.idea)}">${esc(x.idea).substring(0,80)}${x.idea.length>80?'...':''}</td><td>${esc(x.tools||'')}</td><td>${esc(x.team||'—')}</td><td><a href="${esc(x.link)}" target="_blank" style="color:var(--blue);font-size:12px">Open ↗</a></td><td style="font-size:11px;white-space:nowrap">${date}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
-function clearAllData(){if(confirm('Delete all submissions? This cannot be undone.')){clearSubmissions();refreshAdmin();showToast('All submissions cleared','info')}}
-
-// ============================================================
-// EXCEL DOWNLOAD
-// ============================================================
-function downloadExcel(){
-  const s=getSubmissions();
-  if(!s.length){showToast('No submissions to download','error');return}
-  const data=s.map((x,i)=>({'#':i+1,'Full Name':x.name,'Email':x.email,'Department':x.department,'Idea Title':x.ideaTitle||'','Description':x.idea,'AI Tools':x.tools||'','Team Members':x.team||'Solo','Prototype Link':x.link,'Submitted On':new Date(x.timestamp).toLocaleString('en-IN'),'Status':x.status||'new'}));
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:4},{wch:22},{wch:30},{wch:18},{wch:30},{wch:50},{wch:25},{wch:25},{wch:35},{wch:22},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws,'Submissions');
-  // Summary
-  const dc={};s.forEach(x=>{dc[x.department]=(dc[x.department]||0)+1});
-  const sum=Object.entries(dc).map(([d,c])=>({Department:d,Submissions:c}));
-  sum.push({Department:'TOTAL',Submissions:s.length});
-  const ws2=XLSX.utils.json_to_sheet(sum);ws2['!cols']=[{wch:30},{wch:15}];
-  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
-  XLSX.writeFile(wb,'AI_Challenge_Submissions_'+new Date().toISOString().split('T')[0]+'.xlsx');
-  showToast('Excel downloaded!','success');
 }
 
 // ============================================================
@@ -703,9 +498,6 @@ setInterval(()=>{fi=(fi+1)%fomoLines.length;fomoEl.style.opacity='0';setTimeout(
 document.getElementById('f-idea').addEventListener('input',function(){document.getElementById('cl').textContent=400-this.value.length});
 function toggleFaq(btn){const a=btn.nextElementSibling;const icon=btn.querySelector('.faq-icon');const open=a.classList.toggle('open');icon.classList.toggle('open',open)}
 function switchTab(btn,which){document.querySelectorAll('.jury-tab').forEach(t=>{t.classList.remove('active-j','active-p')});document.querySelectorAll('.jury-panel').forEach(p=>p.classList.remove('visible'));btn.classList.add(which==='judges'?'active-j':'active-p');document.getElementById('tab-'+which).classList.add('visible')}
-
-// Update count from DB on load
-(function(){const s=getSubmissions(),base=47,total=base+s.length;document.getElementById('cnt-i').textContent=total;document.getElementById('hs-ideas').textContent=total})();
 </script>
 </body>
 </html>
