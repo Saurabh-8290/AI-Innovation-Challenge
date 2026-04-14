@@ -427,8 +427,26 @@
   Questions or concerns? Write to <a href="mailto:Sabaresh@vglgroup.com">Sabaresh@vglgroup.com</a> · Prize amounts subject to applicable tax deductions
 </footer>
 
-<!-- Admin toggle -->
-<button class="admin-toggle" onclick="openAdmin()" title="Admin Panel">⚙</button>
+<!-- Admin toggle (hidden by default — press Ctrl+Shift+A to reveal) -->
+<button class="admin-toggle" id="admin-toggle-btn" style="display:none" onclick="showLoginPrompt()" title="Admin Panel">⚙</button>
+
+<!-- Admin Login Modal -->
+<div class="admin-overlay" id="login-overlay" onclick="if(event.target===this)closeLogin()">
+  <div class="admin-modal" style="max-width:400px;text-align:center">
+    <button class="close-btn" onclick="closeLogin()" style="position:absolute;top:16px;right:20px">✕</button>
+    <div style="padding:1.5rem 1rem">
+      <div style="font-size:40px;margin-bottom:12px">🔐</div>
+      <h2 style="font-size:1.2rem;margin-bottom:4px">Admin Access</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Enter the admin password to view submissions</p>
+      <div class="field" style="text-align:left">
+        <label>Password</label>
+        <input type="password" id="admin-pwd" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')verifyAdmin()"/>
+      </div>
+      <p id="pwd-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;display:none">Incorrect password. Please try again.</p>
+      <button class="submit-btn" onclick="verifyAdmin()" style="margin-top:0">Unlock Dashboard →</button>
+    </div>
+  </div>
+</div>
 
 <!-- Admin Modal -->
 <div class="admin-overlay" id="admin-overlay" onclick="if(event.target===this)closeAdmin()">
@@ -474,7 +492,7 @@
 // Deploy the Google Apps Script below and paste the web app URL here.
 // This enables: (a) email to judges, (b) acknowledgement to submitter,
 // (c) Google Sheets as a cloud database backup.
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0dmk8vBE670R2ueu6EnQn4pq2lZ9C2qjIkPh9EVZgPlCn4RBqUAnYx3gxLJa93y-d3g/exec';
+const GOOGLE_SCRIPT_URL = '';
 // If you prefer EmailJS, fill these instead:
 const EMAILJS_PUBLIC_KEY = '';
 const EMAILJS_SERVICE_ID = '';
@@ -568,8 +586,50 @@ function handleSubmit(){
 }
 
 // ============================================================
-// ADMIN PANEL
+// ADMIN PANEL (Password Protected)
 // ============================================================
+// CHANGE THIS PASSWORD to whatever you want:
+const ADMIN_PASSWORD = 'vgl@2026';
+let adminAuthenticated = false;
+
+// Secret shortcut: Ctrl+Shift+A to show the admin button
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    const btn = document.getElementById('admin-toggle-btn');
+    btn.style.display = btn.style.display === 'none' ? 'flex' : 'none';
+  }
+});
+
+function showLoginPrompt() {
+  if (adminAuthenticated) {
+    openAdmin();
+    return;
+  }
+  document.getElementById('login-overlay').classList.add('visible');
+  document.getElementById('admin-pwd').value = '';
+  document.getElementById('pwd-error').style.display = 'none';
+  setTimeout(() => document.getElementById('admin-pwd').focus(), 100);
+}
+
+function closeLogin() {
+  document.getElementById('login-overlay').classList.remove('visible');
+}
+
+function verifyAdmin() {
+  const pwd = document.getElementById('admin-pwd').value;
+  if (pwd === ADMIN_PASSWORD) {
+    adminAuthenticated = true;
+    closeLogin();
+    openAdmin();
+    showToast('Admin access granted', 'success');
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('admin-pwd').value = '';
+    document.getElementById('admin-pwd').focus();
+  }
+}
+
 function openAdmin(){document.getElementById('admin-overlay').classList.add('visible');refreshAdmin()}
 function closeAdmin(){document.getElementById('admin-overlay').classList.remove('visible')}
 
