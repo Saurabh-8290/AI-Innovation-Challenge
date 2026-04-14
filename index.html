@@ -158,7 +158,7 @@
     <p class="hero-sub">We're searching for the builders hiding inside this company. Spot a problem. Build an AI fix. Win big — and reshape how we work, forever.</p>
     <a href="#submit" class="hero-cta">Submit your idea →</a>
     <div class="hero-stats">
-      <div class="hstat"><div class="hstat-n" id="hs-ideas">47</div><div class="hstat-l">ideas submitted</div></div>
+      <div class="hstat"><div class="hstat-n" id="hs-ideas">--</div><div class="hstat-l">ideas submitted</div></div>
       <div class="hstat"><div class="hstat-n">₹1.9L</div><div class="hstat-l">in prizes</div></div>
       <div class="hstat"><div class="hstat-n" id="hs-days">18</div><div class="hstat-l">days left</div></div>
     </div>
@@ -215,10 +215,10 @@
         <div class="live-badge"><div style="width:6px;height:6px;background:#059669;border-radius:50%;animation:pulse 1.4s infinite"></div>Live</div>
       </div>
       <div class="stats-grid">
-        <div class="stat-box"><div class="stat-n" id="cnt-i">47</div><div class="stat-l">Ideas in</div></div>
-        <div class="stat-box"><div class="stat-n">11</div><div class="stat-l">Departments</div></div>
+        <div class="stat-box"><div class="stat-n" id="cnt-i">--</div><div class="stat-l">Ideas in</div></div>
+        <div class="stat-box"><div class="stat-n" id="cnt-dept">--</div><div class="stat-l">Departments</div></div>
         <div class="stat-box"><div class="stat-n">312</div><div class="stat-l">Page views</div></div>
-        <div class="stat-box"><div class="stat-n" style="color:#dc2626" id="cnt-d">18d</div><div class="stat-l">Remaining</div></div>
+        <div class="stat-box"><div class="stat-n" style="color:#dc2626" id="cnt-d">--</div><div class="stat-l">Remaining</div></div>
       </div>
       <div class="fomo-bar" id="fomo">⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she's already entry #47.</div>
     </div>
@@ -414,6 +414,29 @@ const NOTIFICATION_RECIPIENTS = [
 ];
 
 // ============================================================
+// LIVE STATS from Google Sheets
+// ============================================================
+async function loadLiveStats(){
+  if(!GOOGLE_SCRIPT_URL) return;
+  try{
+    const resp = await fetch(GOOGLE_SCRIPT_URL + '?action=getStats');
+    const data = await resp.json();
+    if(data.status === 'success'){
+      document.getElementById('cnt-i').textContent = data.totalIdeas || 0;
+      document.getElementById('hs-ideas').textContent = data.totalIdeas || 0;
+      document.getElementById('cnt-dept').textContent = data.totalDepts || 0;
+    }
+  }catch(err){
+    // If CORS blocks the GET, stats stay as --
+    console.log('Stats fetch blocked by CORS, using fallback');
+    document.getElementById('cnt-i').textContent = '0';
+    document.getElementById('hs-ideas').textContent = '0';
+    document.getElementById('cnt-dept').textContent = '0';
+  }
+}
+loadLiveStats();
+
+// ============================================================
 // TOAST
 // ============================================================
 function showToast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3500)}
@@ -507,8 +530,10 @@ function handleSubmit(){
   sendNotificationEmails(sub);
   document.getElementById('form-wrap').style.display='none';
   document.getElementById('success-box').style.display='block';
-  const c=document.getElementById('cnt-i');c.textContent=parseInt(c.textContent)+1;
-  document.getElementById('hs-ideas').textContent=parseInt(document.getElementById('hs-ideas').textContent)+1;
+  const c=document.getElementById('cnt-i');
+  const currentCount = parseInt(c.textContent) || 0;
+  c.textContent = currentCount + 1;
+  document.getElementById('hs-ideas').textContent = currentCount + 1;
 }
 
 // ============================================================
@@ -527,9 +552,26 @@ const MAX_DIST=0.72;let t=0;
 function animate(){ctx.clearRect(0,0,W,H);t++;targetRotY=mouseX*.55;targetRotX=-mouseY*.38;rotY+=(targetRotY-rotY)*.04;rotX+=(targetRotX-rotX)*.04;nodes.forEach(n=>n.update());const proj=nodes.map((n,i)=>({...n.project(t),node:n,i}));proj.sort((a,b)=>a.z-b.z);for(let i=0;i<proj.length;i++){for(let j=i+1;j<proj.length;j++){const a=proj[i].node,b=proj[j].node;const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z;const d=Math.sqrt(dx*dx+dy*dy+dz*dz);if(d<MAX_DIST){const str=1-d/MAX_DIST;const avgZ=(proj[i].z+proj[j].z)/2;const depthAlpha=Math.max(0,(avgZ+1.2)/2.4);const alpha=(a.isHub||b.isHub?str*.5:str*.15)*depthAlpha;const g=ctx.createLinearGradient(proj[i].sx,proj[i].sy,proj[j].sx,proj[j].sy);g.addColorStop(0,hexAlpha(a.color,alpha));g.addColorStop(1,hexAlpha(b.color,alpha));ctx.beginPath();ctx.moveTo(proj[i].sx,proj[i].sy);ctx.lineTo(proj[j].sx,proj[j].sy);ctx.strokeStyle=g;ctx.lineWidth=(a.isHub||b.isHub?str*1.6:str*.7)*proj[i].scale;ctx.stroke()}}}proj.forEach(p=>{if(p.isHub){const g=ctx.createRadialGradient(p.sx,p.sy,0,p.sx,p.sy,p.r*5);g.addColorStop(0,hexAlpha(p.node.color,.22));g.addColorStop(1,hexAlpha(p.node.color,0));ctx.beginPath();ctx.arc(p.sx,p.sy,p.r*5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}ctx.beginPath();ctx.arc(p.sx,p.sy,Math.max(.5,p.r),0,Math.PI*2);ctx.fillStyle=hexAlpha(p.node.color,p.alpha);ctx.fill()});requestAnimationFrame(animate)}
 resize();window.addEventListener('resize',resize);animate();
 
-// Countdown
-let secs=18*86400+7*3600+42*60+9;
-setInterval(()=>{if(secs<=0)return;secs--;const d=Math.floor(secs/86400),h=Math.floor((secs%86400)/3600),m=Math.floor((secs%3600)/60),s=secs%60;document.getElementById('cd').textContent=String(d).padStart(2,'0');document.getElementById('ch').textContent=String(h).padStart(2,'0');document.getElementById('cm').textContent=String(m).padStart(2,'0');document.getElementById('cs').textContent=String(s).padStart(2,'0');document.getElementById('hs-days').textContent=d;document.getElementById('cnt-d').textContent=d+'d'},1000);
+// Countdown to April 30, 2026 23:59:59 IST (UTC+5:30)
+const DEADLINE = new Date('2026-04-30T23:59:59+05:30').getTime();
+function updateCountdown(){
+  const now = Date.now();
+  let diff = Math.max(0, Math.floor((DEADLINE - now) / 1000));
+  const d=Math.floor(diff/86400),h=Math.floor((diff%86400)/3600),m=Math.floor((diff%3600)/60),s=diff%60;
+  document.getElementById('cd').textContent=String(d).padStart(2,'0');
+  document.getElementById('ch').textContent=String(h).padStart(2,'0');
+  document.getElementById('cm').textContent=String(m).padStart(2,'0');
+  document.getElementById('cs').textContent=String(s).padStart(2,'0');
+  document.getElementById('hs-days').textContent=d;
+  document.getElementById('cnt-d').textContent=d+'d';
+  if(diff<=0){
+    document.querySelector('.cd-label-pre').textContent='Submissions are closed';
+    document.getElementById('sub-btn').disabled=true;
+    document.getElementById('sub-btn').textContent='Submissions closed';
+  }
+}
+updateCountdown();
+setInterval(updateCountdown,1000);
 
 // FOMO
 const fomoLines=['⚡ <strong>Priya from Product</strong> submitted 22 minutes ago — she\'s already entry #47.','🔥 <strong>11 departments</strong> have entered. Is yours on the board yet?','👀 <strong>The top prize is unclaimed.</strong> Your idea might be the one to take it.','⏳ <strong>Early entries</strong> get more review time from judges. Don\'t wait.','🚀 <strong>47 ideas in</strong> and counting. The window is closing fast.'];
