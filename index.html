@@ -553,7 +553,7 @@ function animate(){ctx.clearRect(0,0,W,H);t++;targetRotY=mouseX*.55;targetRotX=-
 resize();window.addEventListener('resize',resize);animate();
 
 // Countdown to April 30, 2026 23:59:59 IST (UTC+5:30)
-const DEADLINE = new Date('2026-04-30T23:59:59+05:30').getTime();
+const DEADLINE = new Date('2026-04-17T23:59:59+05:30').getTime();
 function updateCountdown(){
   const now = Date.now();
   let diff = Math.max(0, Math.floor((DEADLINE - now) / 1000));
