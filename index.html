@@ -368,10 +368,6 @@
         <div class="char-row"><span id="cl">400</span> characters remaining</div>
       </div>
       <div class="field">
-        <label>AI tools / technologies used <span class="req">*</span></label>
-        <input type="text" id="f-tools" placeholder="e.g. Claude API, Python, GPT-4, LangChain"/>
-      </div>
-      <div class="field">
         <label>Team members <span>(optional — leave blank if submitting solo)</span></label>
         <input type="text" id="f-team" placeholder="e.g. Anjali Sharma, Karan Nair"/>
       </div>
@@ -405,6 +401,7 @@
 // This enables: (a) saving to Google Sheets, (b) email to judges,
 // (c) acknowledgement email to submitter.
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxExbiRf7LaegfNJyBTOGQSUwALP8glckKzJYMgPYboKwRc3xm0Eil2i1CTQEbm6TKnlw/exec';
+
 const NOTIFICATION_RECIPIENTS = [
   {name:'Nitin Panwad',    email:'nitin.panwad@vglgroup.com',    role:'Group CFO'},
   {name:'Aswini Agarwal',  email:'aswini.agrawal@vglgroup.com',  role:'Head of Supply Chain Management'},
@@ -533,12 +530,11 @@ function handleSubmit(){
   const dept=document.getElementById('f-dept').value;
   const ideaTitle=document.getElementById('f-title').value.trim();
   const idea=document.getElementById('f-idea').value.trim();
-  const tools=document.getElementById('f-tools').value.trim();
   const team=document.getElementById('f-team').value.trim();
   const link=document.getElementById('f-link').value.trim();
   const btn=document.getElementById('sub-btn');
 
-  if(!name||!email||!dept||!ideaTitle||!idea||!tools||!link){
+  if(!name||!email||!dept||!ideaTitle||!idea||!link){
     btn.classList.add('err');btn.textContent='Please fill in all required fields';
     setTimeout(()=>{btn.classList.remove('err');btn.textContent='Submit my idea →'},2200);return;
   }
@@ -548,7 +544,7 @@ function handleSubmit(){
   }
 
   btn.disabled=true;btn.textContent='Submitting...';
-  const sub={name,email,department:dept,ideaTitle,idea,tools,team,link,timestamp:new Date().toISOString(),status:'new'};
+  const sub={name,email,department:dept,ideaTitle,idea,team,link,timestamp:new Date().toISOString(),status:'new'};
   sendNotificationEmails(sub);
   document.getElementById('form-wrap').style.display='none';
   document.getElementById('success-box').style.display='block';
