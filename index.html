@@ -342,7 +342,7 @@
         <input type="email" id="f-email" placeholder="e.g. rahul.mehta@vglgroup.com"/>
       </div>
       <div class="field">
-        <label>Department <span class="req">*</span></label>
+        <label>Department</label>
         <select id="f-dept">
           <option value="">Select your department</option>
           <option>Finance</option>
@@ -359,20 +359,20 @@
         </select>
       </div>
       <div class="field">
-        <label>Idea title <span class="req">*</span></label>
+        <label>Idea Title <span class="req">*</span></label>
         <input type="text" id="f-title" placeholder="e.g. AI-Powered Invoice Reconciliation Bot"/>
       </div>
       <div class="field">
-        <label>Your idea in brief <span>(what does it do, and what problem does it solve?)</span> <span class="req">*</span></label>
+        <label>Your Idea in brief <span>(what does it do, and what problem does it solve?)</span> <span class="req">*</span></label>
         <textarea id="f-idea" maxlength="400" placeholder="Describe your AI automation in 2–4 sentences. Be specific about the problem and the solution..."></textarea>
         <div class="char-row"><span id="cl">400</span> characters remaining</div>
       </div>
       <div class="field">
-        <label>Team members <span>(optional — leave blank if submitting solo)</span></label>
+        <label>Team Members <span>(optional — leave blank if submitting solo)</span></label>
         <input type="text" id="f-team" placeholder="e.g. Anjali Sharma, Karan Nair"/>
       </div>
       <div class="field">
-        <label>Link to your prototype or demo <span class="req">*</span></label>
+        <label>Link to your prototype or demo</label>
         <input type="url" id="f-link" placeholder="https://..."/>
       </div>
       <button class="submit-btn" id="sub-btn" onclick="handleSubmit()">Submit my idea →</button>
@@ -534,7 +534,7 @@ function handleSubmit(){
   const link=document.getElementById('f-link').value.trim();
   const btn=document.getElementById('sub-btn');
 
-  if(!name||!email||!dept||!ideaTitle||!idea||!link){
+  if(!name||!email||!ideaTitle||!idea){
     btn.classList.add('err');btn.textContent='Please fill in all required fields';
     setTimeout(()=>{btn.classList.remove('err');btn.textContent='Submit my idea →'},2200);return;
   }
